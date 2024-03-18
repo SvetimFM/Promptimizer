@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 
-from models.LLM import LLM
+from models.PromptimizerLLM import PromptimizerLLM
 from models.Prompt import Prompt
 from promptimizer.constants import GPT4_NAME, CLAUDE_NAME, GEMINI_NAME
 from promptimizer.promptimizer import run_optimizer
@@ -55,26 +55,27 @@ def webpage():
         form_errors = validate_form(form_dict)
         if not form_errors:
             start_time = time.time()
-            try:
-                llm_config = form_dict["llm_config"]
-                prompt_config = form_dict["prompt_config"]
-                llm = LLM(llm_config)
-                input_prompt = Prompt(prompt_config)
-                optimized_output = run_optimizer(llm, input_prompt,
-                                                 expansion_factor=count_of_versions,
-                                                 steps_factor=count_of_generations
-                                                 )
+            #try:
 
-                # TODO: rest of the logic :3
-                st.write(optimized_output)
+            llm_config = form_dict["llm_config"]
+            prompt_config = form_dict["prompt_config"]
+            llm = PromptimizerLLM(**llm_config)
+            input_prompt = Prompt(**prompt_config)
+            optimized_output = run_optimizer(llm, input_prompt,
+                                             expansion_factor=count_of_versions,
+                                             steps_factor=count_of_generations
+                                             )
 
-                # logging
-                end_time = time.time()
-                elapsed_time = end_time - start_time
-                st.write(f"Request took: {elapsed_time:.2f} seconds")
+            # TODO: rest of the logic :3
+            st.write(optimized_output)
 
-            except Exception as e:
-                st.error(f"Error: {e}")
+            # logging
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            st.write(f"Request took: {elapsed_time:.2f} seconds")
+
+            #except Exception as e:
+            #    st.error(f"Error: {e}")
         else:
             st.error(f"{form_errors}")
 
@@ -84,9 +85,9 @@ def validate_form(form_dict: dict[dict]) -> list[dict]:
     # fields exist check
     missing_fields = []
     for key, form_sub_item in form_dict.items():
-        for key, value in form_sub_item.items():
-            if not value:
-                missing_fields.append(key)
+        for test, value in form_sub_item.items():
+            if value is None:
+                missing_fields.append([test, value])
 
     if missing_fields:
         return {"required fields missing": missing_fields}

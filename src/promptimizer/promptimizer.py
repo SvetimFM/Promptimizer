@@ -1,4 +1,4 @@
-from src.models.LLM import LLM
+from src.models.PromptimizerLLM import PromptimizerLLM
 from src.models.Prompt import Prompt
 
 
@@ -49,7 +49,7 @@ def _select_best_prompts(prompts: list[str], target_of_action: str, winner_count
 
 
 # TODO: Implement training data and subsequent testing
-def run_optimizer(llm: LLM, prompt: Prompt, expansion_factor: int = 10, steps_factor: int = 1, winner_count: int = 1, target_of_action: str = None, example_data: dict[any, any] = None) -> list[str]:
+def run_optimizer(llm: PromptimizerLLM, prompt: Prompt, expansion_factor: int = 10, steps_factor: int = 1, winner_count: int = 1, target_of_action: str = None, example_data: dict[any, any] = None) -> list[str]:
     """
     :param llm: LLM to use for prompt generation.
     :param prompt: initial prompt to expand upon.
@@ -60,7 +60,7 @@ def run_optimizer(llm: LLM, prompt: Prompt, expansion_factor: int = 10, steps_fa
     :param example_data: dictionary of example data (data is used for prompt scoring)
     :return: named tuple of items, returning optimized prompt, score, list of improvements made from the original prompt
     """
-    return "LOGIC COMING"
+    return [llm, prompt]
 
 
 
