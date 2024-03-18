@@ -6,7 +6,7 @@ from langchain_openai import OpenAI
 from pydantic import BaseModel, root_validator
 from rich import console
 
-from src.promptimizer.apikey import OPEN_AI_API_KEY, ANTHROPIC_API_KEY, google_api_key
+from src.promptimizer.apikey import OPEN_AI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY
 from src.promptimizer.constants import OPUS, GPT4_NAME, CLAUDE_NAME, GEMINI_NAME, GPT4, GEMINI
 
 
@@ -21,12 +21,19 @@ class PromptimizerLLM(BaseModel):
         temp = values.get('temp', 0.1)  # Default to 0.1 if not provided
 
         if llm_name == GPT4_NAME:
-            values['langchain_model'] = OpenAI(model_name=GPT4, temperature=temp, openai_api_key=OPEN_AI_API_KEY)
+            values['langchain_model'] = OpenAI(model_name=GPT4,
+                                               temperature=temp,
+                                               openai_api_key=OPEN_AI_API_KEY)
         elif llm_name == CLAUDE_NAME:
-            values['langchain_model'] = ChatAnthropic(temperature=temp, anthropic_api_key=ANTHROPIC_API_KEY, model_name=OPUS)
+            values['langchain_model'] = ChatAnthropic(
+                                                model_name=OPUS,
+                                                temperature=temp,
+                                                anthropic_api_key=ANTHROPIC_API_KEY)
         elif llm_name == GEMINI_NAME:
-            print(f"errorapikey: {google_api_key}")
-            values['langchain_model'] = ChatGoogleGenerativeAI(model=GEMINI, google_api_key=google_api_key)
+            values['langchain_model'] = ChatGoogleGenerativeAI(
+                                                model=GEMINI,
+                                                google_api_key=GOOGLE_API_KEY)
         else:
             raise ValueError("Invalid LLM name")
+
         return values

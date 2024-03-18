@@ -20,7 +20,7 @@ def webpage():
 
     st.sidebar.title("Promptimizer Configuration")
     st.sidebar.subheader("(Recommended to leave on default)")
-    topic = st.sidebar.text_area('Enter the base prompt to be optimized')
+    topic = st.sidebar.text_area('Enter the base prompt to be optimized', st.session_state.history["content"])
     st.sidebar.write("Count of steps in which prompt will be optimized. Greatly increases latency, has diminishing returns")
     count_of_generations = st.sidebar.slider('Number of steps:', 2, 7, 3)
     st.sidebar.write("Count of prompt versions in each step. Greatly increases cost")
@@ -49,7 +49,7 @@ def webpage():
         # save session
         st.session_state['history'] = {
             "role": "user",
-            "content": form_dict
+            "content": form_dict["prompt_config"]["val"]
         }
 
         form_errors = validate_form(form_dict)
@@ -99,7 +99,9 @@ def validate_form(form_dict: dict[dict]) -> list[dict]:
 def init_page():
     st.set_page_config(page_title="Promptimizer")
     if 'history' not in st.session_state:
-        st.session_state['history'] = {}
+        st.session_state['history'] = {"role": "user",
+                                       "content": "Prompt Goes Here"
+                                       }
 
 
 def main():
