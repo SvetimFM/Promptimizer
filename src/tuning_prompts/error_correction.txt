@@ -1,0 +1,18 @@
+I'm trying to write a "{target_of_action}" prompt.
+
+My current prompt is:
+"{prompt}"
+
+But it gets the following examples wrong:
+{error_str}
+
+Furthermore, it may not be specific enough, and is written for people and not for [llm_name] inference
+
+Based on the examples and inherent innacurracy of being written by a human, the problem with this
+prompt is that {gradient}
+
+Based on the above information, you need to write
+a different improved prompt.
+wrap it with <START> and <END>.
+
+The new prompt is:

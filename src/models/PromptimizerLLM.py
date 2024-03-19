@@ -32,7 +32,7 @@ class PromptimizerLLM(BaseModel):
         elif llm_name == GEMINI_NAME:
             values['langchain_model'] = ChatGoogleGenerativeAI(
                                                 model=GEMINI,
-                                                google_api_key=GOOGLE_API_KEY)
+                                                google_api_key=GOOGLE_API_KEY) # TODO: this was not working for some reason, key would not pass through - fix
         else:
             raise ValueError("Invalid LLM name")
 
