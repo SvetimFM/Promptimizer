@@ -104,7 +104,8 @@ class Promptimizer:
     # over which the prompt has to be optimized)
     # -Categories:
     # needle_in_haystack
-    # code_gen
+    # code_gen !!!
+    # image_gen !!
     # code_gen_troubleshoot
     # text_gen_qa
     # text_gen_summarization
@@ -114,7 +115,5 @@ class Promptimizer:
     # categorization
     # fact_checking
     # sentiment_analysis
-
-    # TODO: Implement optimization for prompts for image generation and code output explicitly
 
     # TODO: Implement 'is_monte_carlo: bool' and its logic
