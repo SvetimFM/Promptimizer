@@ -12,8 +12,6 @@ class Promptimizer:
         """
         :param llm: LLM custom pydantic model to use for prompt generation.
         :param seed_prompt: initial prompt custom pydantic model to expand upon.
-        :param expansion_factor: number of expansions to perform.
-        :param steps_factor: count of evolution steps to perform -> !!this will be deprecated in favor of semantic based completion (llm decides it cannot improve the prompt further)!!
         :param winner_count: number of prompts to return.
         :param target_of_action: semantic error function to minimize.
         :param example_data: dictionary of example data (data is used for prompt scoring)
@@ -31,12 +29,16 @@ class Promptimizer:
 
     # exposed method to train the prompt
     def promptimize(self, expansion_factor: int = 10, steps_factor: int = 1, ):
+        """
+        :param expansion_factor: number of expansions to perform.
+        :param steps_factor: count of evolution steps to perform -> !!this will be deprecated in favor of semantic based completion (llm decides it cannot improve the prompt further)!!
+        """
         return self._promptimize(self.seed_prompt, steps_factor, expansion_factor)
 
-    @classmethod
-    def _promptimize(cls, prompt: Prompt, gen_limit: int, steps_limit: int):
+    def _promptimize(self, prompt: Prompt, gen_limit: int, steps_limit: int):
         prompt_generation_count = int(prompt.id.split("_")[0])
         prompt_expansion_count = int(prompt.id.split("_")[1])
+        toa = self.toa
 
         if prompt_generation_count == gen_limit:
             return prompt
