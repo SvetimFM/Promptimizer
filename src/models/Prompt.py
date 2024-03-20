@@ -5,6 +5,8 @@ from pydantic import BaseModel, root_validator
 
 # TODO: Implement 'is_monte_carlo: bool' and its logic
 # TODO: Implement optimization for prompts for image generation and code output explicitly
+# TODO: CRITICAL - implement sorting for Prompt objects on score
+
 class Prompt(BaseModel):
     gen: int                                    # iteration of the prompt -> 0 is seed prompt
     id_in_gen: int                              # id of the prompt in the generation

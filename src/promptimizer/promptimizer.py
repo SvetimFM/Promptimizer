@@ -35,9 +35,9 @@ class Promptimizer:
         """
         return self._promptimize(self.seed_prompt, steps_factor, expansion_factor)
 
-    def _promptimize(self, prompt: Prompt, gen_limit: int, steps_limit: int):
-        prompt_generation_count = int(prompt.id.split("_")[0])
-        prompt_expansion_count = int(prompt.id.split("_")[1])
+    def _promptimize(self, prompt: Prompt, gen_limit: int, expansion_limit: int):
+        prompt_generation_count = int(prompt.id.split("_")[0])+1
+
         toa = self.toa
 
         if prompt_generation_count == gen_limit:
@@ -45,24 +45,29 @@ class Promptimizer:
 
         # STEP 1: ASSESS CURRENT PROMPT, CREATE GRADIENT
         # score the prompt
-        # critique the prompt -> generate optimization gradient
+        self._score_prompt(prompt, self.test_data)
+        prompt.score = self._critique_prompt(prompt)
 
         # STEP 2: EXPAND AND IMPROVE PROMPT BASED ON GRADIENT STEPS TIMES
         # expand the prompt based on the critique steps_limit times -> error correction step
-            # generation id of each prompt needs to be prompt_generation_count+=1
+        prompt_candidates = self._expand_prompt(prompt_generation_count, expansion_limit, monte_carlo=False)
 
         # STEP 3: SCORE AND SELECT BEST PROMPTS BASED ON SCORE
-        # _score_prompt the list of prompts
-            # if all prompts are less than current prompt in score, return current prompt (fold the arm)
-        # pick top <Count of arms> prompts
+        candidates_scored = (self._score_prompt(candidate, self.test_data) for candidate in prompt_candidates)
+        # TODO: implement sorting for Prompt objects on score
+        candidates_scored = sorted(candidates_scored)[:self.winner_count]
+
+        if candidates_scored[0] < prompt.score:
+            return prompt
 
         # STEP 4: RECURSE ON TOP PROMPTS
-        # for each top prompt, call promptimize
+        for next_gen_prompt in candidates_scored:
+            self._promptimize(next_gen_prompt, gen_limit, expansion_limit)
 
     # given an initial prompt (seed), its target of action (error function to minimize), its semantic gradient,
     # generate expansion_factor improved prompts
     def _expand_prompt(self, prompt_candidate: Prompt, expansion_factor: int, monte_carlo: bool = False,) -> \
-            list[str]:
+            list[Prompt]:
         """
         :param prompt_candidate: initial prompt to expand upon.
         :param expansion_factor: number of expansions to perform.
@@ -72,7 +77,7 @@ class Promptimizer:
 
     # given a prompt, its score, training data, and semantic critique
     # use LLM to score it against a target of action (error function to minimize)
-    def _critique_prompt(self, prompt: Prompt) -> str:
+    def _critique_prompt(self, prompt: Prompt, target_of_action: str = None) -> str:
         """
         :param prompt: prompt to score.
         :return: semantic error of the prompt against the target action, optionally tested against provided data.
@@ -80,14 +85,14 @@ class Promptimizer:
         pass
 
     # TODO: implement Successive Rejects
-    # sorts and returns winner_count prompts from all prompts, based on their scores
-    def _select_best_prompts(self, prompts: list[Prompt], winner_count: int) -> list[str]:
-        """
-        :param prompts: list of prompts to score.
-        :param winner_count: number of prompts to return.
-        :return: list of prompts with the best scores, up to 'winner_count'
-        """
-        pass
+    # # sorts and returns winner_count prompts from all prompts, based on their scores
+    # def _select_best_prompts(self, prompts: list[Prompt], winner_count: int) -> list[str]:
+    #     """
+    #     :param prompts: list of prompts to score.
+    #     :param winner_count: number of prompts to return.
+    #     :return: list of prompts with the best scores, up to 'winner_count'
+    #     """
+    #     pass
 
     # score a prompt against a target of action (error function to minimize) and optional test data
     def _score_prompt(self, prompt: Prompt, data: dict[any, any] = None, semantic: bool = True) -> float:
@@ -97,6 +102,7 @@ class Promptimizer:
         :param semantic: whether to score the prompt against the target of action (semantic error function)
         :return: score of the prompt against the target of action (semantic error function)
         """
+
         pass
 
     #TODO:

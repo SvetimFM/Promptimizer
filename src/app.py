@@ -4,7 +4,7 @@ import time
 from models.PromptimizerLLM import PromptimizerLLM
 from models.Prompt import Prompt
 from promptimizer.constants import GPT4_NAME, CLAUDE_NAME, GEMINI_NAME
-from promptimizer.promptimizer import run_optimizer
+from promptimizer.promptimizer import Promptimizer
 
 
 def webpage():
@@ -55,19 +55,25 @@ def webpage():
         form_errors = validate_form(form_dict)
         if not form_errors:
             start_time = time.time()
-            #try:
 
+            #try:
             llm_config = form_dict["llm_config"]
             prompt_config = form_dict["prompt_config"]
+
             llm = PromptimizerLLM(**llm_config)
             input_prompt = Prompt(**prompt_config)
-            optimized_output = run_optimizer(llm, input_prompt,
-                                             expansion_factor=count_of_versions,
-                                             steps_factor=count_of_generations
-                                             )
 
-            # TODO: rest of the logic :3
-            st.write(optimized_output)
+            promptimizer = Promptimizer(llm=llm,
+                                        seed_prompt=input_prompt,
+                                        # TODO: implement frontend for these
+                                        winner_count=1,
+                                        target_of_action=None,
+                                        example_data=None)
+
+            promptimizer.promptimize(expansion_factor=count_of_versions,
+                                     steps_factor=count_of_generations)
+
+            st.write(promptimizer.optimizedPrompts)
 
             # logging
             end_time = time.time()
