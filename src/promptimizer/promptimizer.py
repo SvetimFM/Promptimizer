@@ -75,6 +75,8 @@ class Promptimizer:
         :return: list of expanded prompts.
         """
 
+    # TODO: CRITICAL -> PASS CRITIQUE HISTORY OPTIONALLY
+    # This would be akin to passing the gradient history to the LLM, which would allow it to learn from the gradient history.
     # given a prompt, its score, training data, and semantic critique
     # use LLM to score it against a target of action (error function to minimize)
     def _critique_prompt(self, prompt: Prompt, target_of_action: str = None) -> str:
