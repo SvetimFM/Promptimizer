@@ -13,6 +13,8 @@ class Promptimizer:
                  llm: PromptimizerLLM,
                  seed_prompt: Prompt,
                  winner_count: int = 1,
+                 compress: bool = False,
+                 image_gen: bool = False,
                  example_data: dict[any, any] = None):
         """
         :param llm: LLM custom pydantic model to use for prompt generation.
@@ -25,10 +27,16 @@ class Promptimizer:
         self.llm = llm
 
         self.seed_prompt = seed_prompt
-        self.toa_list = TaskType.enum_to_comma_separated_string()
         self.test_data = example_data
         self.winner_count = winner_count
         self.optimizedPrompts = None
+        self.compress = compress
+
+        if image_gen:
+            self.toa_list = ImageTaskType.enum_to_comma_separated_string()
+        else:
+            self.toa_list = TaskType.enum_to_comma_separated_string()
+
 
         # dictionary of all optimization prompts
         self.optimization_prompts = {}
@@ -44,9 +52,12 @@ class Promptimizer:
         with open('src/tuning_prompts/float_score_generator.txt', 'r') as file:
             data = file.read().replace('\n', '')
             self.optimization_prompts["float_score_generator"] = data
+        with open('src/tuning_prompts/compression_prompt.txt', 'r') as file:
+            data = file.read().replace('\n', '')
+            self.optimization_prompts["compression_prompt"] = data
 
         # select target of action for a given seed prompt
-        self._select_toa(self.seed_prompt)
+        self._select_toa(self.seed_prompt, self.llm.llm_name)
 
     # exposed method to train the prompt
     def promptimize(self, expansion_factor: int = 10, steps_factor: int = 1):
@@ -56,19 +67,27 @@ class Promptimizer:
         semantic based completion (llm decides it cannot improve the prompt further)!!
         """
         final_prompt = self._promptimize(self.seed_prompt, steps_factor, expansion_factor)
+
+        print(f"final prompt val: {final_prompt.val}")
+
+        compression_template = PromptTemplate(template=self.optimization_prompts["compression_prompt"],
+                                              input_variables=["prompt"])
+
+        compression_chain = LLMChain(llm=self.llm.langchain_model,
+                                     prompt=compression_template,
+                                     verbose=True)
+
+        if self.compress:
+            final_prompt.val = compression_chain.run(prompt=final_prompt.val)
+            self._score_prompt(final_prompt)
+            print(f"final compressed prompt val: {final_prompt.val}")
+
         self.optimizedPrompts = final_prompt
-        print(f"final prompt: {self.optimizedPrompts.val}")
-        print(f"final prompt score: {self.optimizedPrompts.score}")
 
-        optimized_prompt_value = self.optimizedPrompts.val
-        optimized_prompt_score = self.optimizedPrompts.score
-        original_prompt_value = self.seed_prompt.val
-        original_prompt_score = self.seed_prompt.score
-
-        return_object = {"original_prompt": original_prompt_value,
-                         "original_prompt_score": original_prompt_score,
-                         "optimized_prompt": optimized_prompt_value,
-                         "optimized_prompt_score": optimized_prompt_score}
+        return_object = {"original_prompt": self.seed_prompt.val,
+                         "original_prompt_score": self.seed_prompt.score,
+                         "optimized_prompt": self.optimizedPrompts.val,
+                         "optimized_prompt_score": self.optimizedPrompts.score}
 
         return return_object
 
@@ -205,16 +224,17 @@ class Promptimizer:
         print(f"score for {prompt.id}: {prompt.score}")
 
     # set the target of action for a given seed prompt
-    def _select_toa(self, prompt: Prompt):
+    def _select_toa(self, prompt: Prompt, llm_name: str):
         toa_selection = PromptTemplate(template=self.optimization_prompts["toa_selection"],
-                                       input_variables=["prompt", "toa"])
+                                       input_variables=["prompt", "toa", "llm"])
 
         toa_chain = LLMChain(llm=self.llm.langchain_model,
                              prompt=toa_selection,
                              verbose=True)
 
         prompt.toa = toa_chain.run(prompt=prompt.val,
-                                   toa=self.toa_list)
+                                   toa=self.toa_list,
+                                   llm=llm_name)
 
         print(f"toa for seed prompt: {prompt.toa}")
 
@@ -234,6 +254,15 @@ class TaskType(Enum):
     CATEGORIZATION = 'categorization'
     FACT_CHECKING = 'fact_checking'
     SENTIMENT_ANALYSIS = 'sentiment_analysis'
+
+    @classmethod
+    def enum_to_comma_separated_string(cls):
+        # Use a list comprehension to extract the values (using .value) of each enum member
+        # Then, join these values into a comma-separated string, converting them to strings if necessary
+        return ', '.join(str(member.value) for member in TaskType)
+
+
+class ImageTaskType(Enum):
     GEN_AI_ART_DALL_E = 'generative visual generation prompt for dall-e model'
     GEN_AI_ART_MIDJOURNEY = 'generative visual generation prompt for midjourney model'
     GEN_AI_ART_SD = 'generative visual generation prompt for stability ai models'

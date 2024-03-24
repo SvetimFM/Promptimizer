@@ -1,0 +1,5 @@
+Given the prompt: '{prompt}', your task is to compress it into a shorter version that conveys the same information,
+retains the original meaning, and produces the same output when processed by an LLM. The compressed version should be
+syntactically correct, semantically identical to the original, and easily parsable by an LLM. Please ensure the
+compression is significant but does not omit any critical details or alter the fundamental message.
+Aim for clarity, brevity, and precision.

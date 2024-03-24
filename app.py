@@ -19,14 +19,13 @@ def webpage():
     temp_selection = st.sidebar.slider('Temperature:', 0.0, 1.0, 0.1)  # remove this for release - find best temp (likely either 0.0 or 0.6, might be 0.1)
 
     st.sidebar.title("Promptimizer Configuration")
-    st.sidebar.subheader("(Recommended to leave on default)")
-    topic = st.sidebar.text_area('Enter the base prompt to be optimized', st.session_state.history["content"])
-    st.sidebar.write("Count of steps in which prompt will be optimized. Greatly increases latency, has diminishing returns")
     count_of_generations = st.sidebar.slider('Number of steps:', 2, 7, 3)
-    st.sidebar.write("Count of prompt versions in each step. Greatly increases cost")
-    count_of_versions = st.sidebar.slider('Number of versions per step:', 2, 10, 6)
+    count_of_versions = st.sidebar.slider('Number of expansions per step:', 2, 10, 4)
 
-    submit_to_promptimizer = st.sidebar.button('Submit Optimization')
+    topic = st.text_area('Enter your prompt', st.session_state.history["content"])
+    image_prompt_optimization = st.toggle("Image Generation Prompt")
+    compress_final_prompt = st.toggle("Compress output prompt")
+    submit_to_promptimizer = st.button('Submit Optimization')
 
     if submit_to_promptimizer:
         # create an object for validation purposes
