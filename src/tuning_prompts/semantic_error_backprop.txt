@@ -1,0 +1,5 @@
+Given: {prompt}, Prompt's target of action: {toa}
+
+Evaluate the prompts effectiveness towards the aligned ToA, noting limitations.
+Suggest refinements for clarity, specificity, and alignment with ToA.
+Seek to find and list out all the ways in which the prompt can be improved and output just that as a list

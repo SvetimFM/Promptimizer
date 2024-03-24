@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel, root_validator
 
@@ -14,7 +14,7 @@ class Prompt(BaseModel):
     val: str                                    # prompt itself
 
     optimization_vector: Optional[str] = None   # semantic critique of the prompt used to improve it
-    test_data: Optional[dict[any, any]] = None  # test data used to evaluate the prompt's quality
+    test_data: Optional[dict[Any, Any]] = None  # test data used to evaluate the prompt's quality
     toa: Optional[str] = None                   # target of action used to optimize the prompt
     score: Optional[float] = None               # score of the prompt against test data
 
@@ -28,3 +28,18 @@ class Prompt(BaseModel):
 
     def __str__(self):
         return f"{self.id} {self.val} {self.score}"
+
+    # Necessary for total_ordering: Equals method
+    def __eq__(self, other):
+        if not isinstance(other, Prompt):
+            return NotImplemented
+        return self.score == other.score
+
+    # One comparison method for total_ordering to work
+    def __lt__(self, other):
+        if not isinstance(other, Prompt):
+            return NotImplemented
+        # Handle the case where either score is None
+        if self.score is None or other.score is None:
+            return False
+        return self.score < other.score

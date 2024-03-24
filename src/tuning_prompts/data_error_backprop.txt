@@ -6,9 +6,9 @@ My current prompt is:
 But this prompt gets the following examples wrong:
 {error_string}
 
-Furthermore, it may not be specific enough, and is written for people and not for [llm_name] inference
+Furthermore, it may not be specific enough, and is written for people and not for {llm_name} inference
 
-give {num_feedbacks} reasons why the prompt could have gotten these examples wrong, and what it might be lacking in
+give reasons why the prompt could have gotten these examples wrong, and what it might be lacking in
 terms of semantics necessary for LLM inference.
 
 Wrap each reason with <START> and <END>

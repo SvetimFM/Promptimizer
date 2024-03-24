@@ -1,10 +1,10 @@
 import streamlit as st
 import time
 
-from models.PromptimizerLLM import PromptimizerLLM
-from models.Prompt import Prompt
-from promptimizer.constants import GPT4_NAME, CLAUDE_NAME, GEMINI_NAME
-from promptimizer.promptimizer import Promptimizer
+from src.models.PromptimizerLLM import PromptimizerLLM
+from src.models.Prompt import Prompt
+from src.promptimizer.constants import GPT4_NAME, CLAUDE_NAME, GEMINI_NAME
+from src.promptimizer.promptimizer import Promptimizer
 
 
 # TODO: IMPLEMENT TOA
@@ -18,7 +18,6 @@ def webpage():
     llm_selection = st.sidebar.radio('Select LLM:', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME])
     temp_selection = st.sidebar.slider('Temperature:', 0.0, 1.0, 0.1)  # remove this for release - find best temp (likely either 0.0 or 0.6, might be 0.1)
 
-
     st.sidebar.title("Promptimizer Configuration")
     st.sidebar.subheader("(Recommended to leave on default)")
     topic = st.sidebar.text_area('Enter the base prompt to be optimized', st.session_state.history["content"])
@@ -26,8 +25,6 @@ def webpage():
     count_of_generations = st.sidebar.slider('Number of steps:', 2, 7, 3)
     st.sidebar.write("Count of prompt versions in each step. Greatly increases cost")
     count_of_versions = st.sidebar.slider('Number of versions per step:', 2, 10, 6)
-
-    st.sidebar.empty()
 
     submit_to_promptimizer = st.sidebar.button('Submit Optimization')
 
@@ -62,19 +59,20 @@ def webpage():
             prompt_config = form_dict["prompt_config"]
 
             llm = PromptimizerLLM(**llm_config)
+
+            # TODO: add manual custom target_of_action
             input_prompt = Prompt(**prompt_config)
 
             promptimizer = Promptimizer(llm=llm,
                                         seed_prompt=input_prompt,
                                         # TODO: implement frontend for these
                                         winner_count=1,
-                                        target_of_action=None,
                                         example_data=None)
 
-            promptimizer.promptimize(expansion_factor=count_of_versions,
+            response = promptimizer.promptimize(expansion_factor=count_of_versions,
                                      steps_factor=count_of_generations)
 
-            st.write(promptimizer.optimizedPrompts)
+            st.write(response)
 
             # logging
             end_time = time.time()

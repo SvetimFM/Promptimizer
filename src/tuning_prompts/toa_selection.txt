@@ -1,0 +1,7 @@
+Given a prompt: {prompt}, Target Actions: {toa}
+
+1. Interpret the prompts intent and scope.
+2. Analyze the Targets of Action (ToA) for desired outcomes.
+3. Identify the ToA most aligned with the prompt.
+
+Output format: Only output the selected target of action - do not output anything else.
