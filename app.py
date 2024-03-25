@@ -12,30 +12,45 @@ def webpage():
     init_page()
 
     st.title("P R O M P T I M I Z E R")
-    st.subheader("Best Version of your Prompt, in One Click.")
+    st.subheader("Best Prompt. One Click.")
 
     st.sidebar.title("Model Configuration")
-    llm_selection = st.sidebar.radio('Select LLM:', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME])
-    temp_selection = st.sidebar.slider('Temperature:', 0.0, 1.0, 0.1)  # remove this for release - find best temp (likely either 0.0 or 0.6, might be 0.1)
+    llm_selection = st.sidebar.radio('Select LLM: (Gemini available for free)', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME], index=2)
+    temp_selection = st.sidebar.slider('Temperature:', 0.0, 1.0,
+                                       0.1)  # remove this for release - find best temp (likely either 0.0 or 0.6, might be 0.1)
 
     st.sidebar.title("Promptimizer Configuration")
     count_of_generations = st.sidebar.slider('Number of steps:', 2, 7, 3)
     count_of_versions = st.sidebar.slider('Number of expansions per step:', 2, 10, 4)
 
-    topic = st.text_area('Enter your prompt', st.session_state.history["content"])
-    image_prompt_optimization = st.toggle("Image Generation Prompt")
-    compress_final_prompt = st.toggle("Compress output prompt")
-    submit_to_promptimizer = st.button('Submit Optimization')
+    main_tab, key_config = st.tabs(["Home", "Settings"])
+    with st.container(border=True):
+        topic = main_tab.text_area('Enter your prompt', st.session_state.history["content"])
+        image_prompt_optimization = main_tab.toggle("Image Generation Prompt")
+        compress_final_prompt = main_tab.toggle("Shorten Output Prompt")
+        generate_synthetic_examples = main_tab.toggle("Generate Synthetic Examples")
+        submit_to_promptimizer = main_tab.button('Submit Optimization')
+
+    with st.container(border=True):
+        key_config_chat_gpt = key_config.text_input('ChatGPT API Key', '')
+        key_config_anthropic = key_config.text_input('Anthropic API Key', '')
+        key_config_gemini = key_config.text_input('Gemini API Key', '')
+
+    progress = 0
 
     if submit_to_promptimizer:
+        st.spinner("Optimizing (takes up to 3 minutes)")
         # create an object for validation purposes
         form_dict = {
             "llm_config": {
                 "llm_name": llm_selection,
                 "temp": temp_selection,
+                "api_keys": {"chat_gpt": key_config_chat_gpt,
+                             "anthropic": key_config_anthropic,
+                             "gemini": key_config_gemini}
             },
             "prompt_config": {
-                "val":  topic,
+                "val": topic,
                 "gen_count": count_of_generations,
                 "ver_count": count_of_versions,
                 "gen": 0,
@@ -53,7 +68,6 @@ def webpage():
         if not form_errors:
             start_time = time.time()
 
-            #try:
             llm_config = form_dict["llm_config"]
             prompt_config = form_dict["prompt_config"]
 
@@ -66,20 +80,23 @@ def webpage():
                                         seed_prompt=input_prompt,
                                         # TODO: implement frontend for these
                                         winner_count=1,
-                                        example_data=None)
-
-            response = promptimizer.promptimize(expansion_factor=count_of_versions,
-                                     steps_factor=count_of_generations)
+                                        example_data=None,
+                                        compress=compress_final_prompt,
+                                        image_gen=image_prompt_optimization,
+                                        synthetic_examples=generate_synthetic_examples)
+            try:
+                response = promptimizer.promptimize(expansion_factor=count_of_versions,
+                                                    steps_factor=count_of_generations)
+            except Exception as e:
+                st.error(f"Uh oh! {e}")
+                return
 
             st.write(response)
-
+            st.success("Optimization complete!")
             # logging
             end_time = time.time()
             elapsed_time = end_time - start_time
             st.write(f"Request took: {elapsed_time:.2f} seconds")
-
-            #except Exception as e:
-            #    st.error(f"Error: {e}")
         else:
             st.error(f"{form_errors}")
 

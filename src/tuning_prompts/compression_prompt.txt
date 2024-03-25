@@ -3,3 +3,6 @@ retains the original meaning, and produces the same output when processed by an 
 syntactically correct, semantically identical to the original, and easily parsable by an LLM. Please ensure the
 compression is significant but does not omit any critical details or alter the fundamental message.
 Aim for clarity, brevity, and precision.
+
+if any string substitutions are present in curly brackets, compressed form MUST contain those substitutions and utilize
+them as they were in the original prompt

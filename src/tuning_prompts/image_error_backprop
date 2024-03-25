@@ -1,0 +1,6 @@
+Given the image prompt: '{image_prompt}', your task is to analyze and provide a detailed critique aimed at enhancing the
+ quality and accuracy of the resulting image produced by a generative model. Focus on identifying aspects of the prompt
+ that could lead to ambiguous or suboptimal interpretations by the model. Offer specific suggestions for improvement
+ that would make the prompt clearer, more specific, and more aligned with the intended meaning.
+
+ you are making a critique for a prompt used for a image generation model, you are not expected to generate an image yourself

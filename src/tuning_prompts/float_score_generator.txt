@@ -1,2 +1,8 @@
-Based on the given prompt {prompt}, target of prompt's action {toa}, and optimization capacity remaining for the prompt {semantic_error},
-output only (ONLY!) a float between 0.0 to 1.0 denoting the prompts efficacy against the target of action within prompts domain
+Based on the given prompt {prompt}, target of prompt's action {toa}, and error remaining in the prompt {semantic_error},
+ output only (ONLY!) a float number between 0.0 to 1.0 denoting the prompts efficacy against the target of action within prompts domain
+
+ 0.0 is completely unable to reliably satisfy prompts requirements
+ 0.5 is sometimes capable, but many edge cases and issues remain
+ 1.0 is always able to produce desired outcome
+
+ output format must be a single number between 0.0 and 1.0

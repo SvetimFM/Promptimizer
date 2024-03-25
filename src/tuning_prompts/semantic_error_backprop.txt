@@ -1,11 +1,5 @@
-Given the prompt: '{prompt}', and its intended Target of Action (ToA): '{toa}', generate a critique focusing exclusively on enhancements.
-Your critique should identify and list areas for improvement that, when addressed, will refine the prompt's clarity, specificity, and alignment with the original prompt and the ToA.
+Given: {prompt}, Prompt's target of action: {toa}
 
-Ensure your feedback:
-
-    Maintains the original intent of the prompt, avoiding suggestions that diverge significantly from the initial objectives.
-    Enhances the prompt's effectiveness in achieving its ToA without adding unnecessary complexity.
-    Identifies any ambiguity, lack of specificity, or misalignment with the ToA, providing concrete examples and suggestions for improvement.
-    Proposes adjustments that ensure the final prompt is more concise, clear, and directly aligned with the ToA, leading to better overall results.
-
-Focus on generating a list of actionable improvements that adhere to these guidelines
+Evaluate the prompt’s effectiveness towards the aligned ToA, noting limitations.
+Suggest refinements for clarity, specificity, and alignment with ToA.
+Conclude with a summary of improvements for optimal alignment with ToA.
