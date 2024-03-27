@@ -6,7 +6,7 @@ My current prompt is:
 But this prompt gets the following examples wrong:
 {error_string}
 
-Furthermore, it may not be specific enough, and is written for people and not for {llm_name} inference
+it needs to perform best for large language model {llm_name} inference
 
 give reasons why the prompt could have gotten these examples wrong, and what it might be lacking in
 terms of semantics necessary for LLM inference.

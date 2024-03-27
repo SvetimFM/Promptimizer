@@ -3,14 +3,15 @@ I'm trying to write a "{toa}" prompt.
 My current prompt is:
 "{prompt}"
 
- Furthermore, it may not be specific enough, and is written for people and not for {llm_name} inference
+ it is written by people and is not optimal for {llm_name} inference
 
- Based on the examples and inherent inaccuracy of being written by a human, the problem with this prompt is that
+ the problems with this prompt are that
  {semantic_error}
 
  Based on the above information, you need to write a different improved prompt.
+ New prompt must be better at doing what the prompt requests - this is a {toa} prompt, you know what to do.
+ Avoid specifying input format, unless its provided explicitly in the current prompt
 
-{synthetic_examples}
-
+ {synthetic_examples}
 
  The new prompt is:

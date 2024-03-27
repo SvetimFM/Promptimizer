@@ -1,5 +1,5 @@
-import logging
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from langchain.chains.llm import LLMChain
 from langchain_core.prompts import PromptTemplate
 
@@ -12,7 +12,7 @@ class Promptimizer:
     def __init__(self,
                  llm: PromptimizerLLM,
                  seed_prompt: Prompt,
-                 winner_count: int = 1,
+                 winner_count: int = 2,
                  compress: bool = False,
                  image_gen: bool = False,
                  synthetic_examples: bool = False,
@@ -33,7 +33,9 @@ class Promptimizer:
         self.optimizedPrompts = None
         self.compress = compress
         self.synthetic_examples = synthetic_examples
-        if image_gen:
+        self.image_gen = image_gen
+
+        if self.image_gen:
             self.toa_list = ImageTaskType.enum_to_comma_separated_string()
         else:
             self.toa_list = TaskType.enum_to_comma_separated_string()
@@ -43,7 +45,7 @@ class Promptimizer:
         with open('src/tuning_prompts/toa_selection.txt', 'r') as file:
             data = file.read().replace('\n', '')
             self.optimization_prompts["toa_selection"] = data
-        with open('src/tuning_prompts/semantic_error_backprop.txt', 'r') as file:
+        with open('src/tuning_prompts/semantic_error_generation.txt', 'r') as file:
             data = file.read().replace('\n', '')
             self.optimization_prompts["semantic_error_generation"] = data
         with open('src/tuning_prompts/error_correction.txt', 'r') as file:
@@ -55,6 +57,12 @@ class Promptimizer:
         with open('src/tuning_prompts/compression_prompt.txt', 'r') as file:
             data = file.read().replace('\n', '')
             self.optimization_prompts["compression_prompt"] = data
+        with open('src/tuning_prompts/image_error_backprop.txt', 'r') as file:
+            data = file.read().replace('\n', '')
+            self.optimization_prompts["image_error_generation"] = data
+        with open('src/tuning_prompts/image_prompt_error_correction.txt', 'r') as file:
+            data = file.read().replace('\n', '')
+            self.optimization_prompts["image_prompt_error_correction"] = data
 
         # select target of action for a given seed prompt
         self._select_toa(self.seed_prompt, self.llm.llm_name)
@@ -112,9 +120,7 @@ class Promptimizer:
 
         # STEP 3: SCORE AND SELECT BEST PROMPTS BASED ON SCORE
         # TODO: implement sorting for Prompt objects on score
-        candidates_scored = sorted(prompt_candidates)
-        candidates_scored.reverse()
-        candidates_scored = candidates_scored[:self.winner_count]
+        candidates_scored = sorted(prompt_candidates)[-self.winner_count:]
 
         if candidates_scored[0].score < prompt.score:
             return candidates_scored[0]
@@ -124,11 +130,11 @@ class Promptimizer:
 
         # STEP 4: RECURSE ON TOP PROMPTS
         for next_gen_prompt in candidates_scored:
-            return self._promptimize(next_gen_prompt, gen_limit, expansion_limit)
+            return sorted([next_gen_prompt, self._promptimize(next_gen_prompt, gen_limit, expansion_limit)])[-1]
 
     # given an initial prompt (seed), its target of action (error function to minimize), its semantic gradient,
     # generate expansion_factor improved prompts
-    def _expand_prompt(self,
+    def _expand_prompt_sync(self,
                        prompt_candidate: Prompt,
                        prompt_generation: int,
                        expansion_factor: int,
@@ -146,7 +152,11 @@ class Promptimizer:
 
         expansions: list[Prompt] = []
 
-        error_correction = PromptTemplate(template=self.optimization_prompts["error_correction"],
+        if self.image_gen:
+            error_correction = PromptTemplate(template=self.optimization_prompts["image_prompt_error_correction"],
+                                              input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
+        else:
+            error_correction = PromptTemplate(template=self.optimization_prompts["error_correction"],
                                           input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
 
         expansion_chain = LLMChain(llm=self.llm.langchain_model,
@@ -182,6 +192,68 @@ class Promptimizer:
 
         return expansions
 
+    def _expand_prompt(self, prompt_candidate: Prompt, prompt_generation: int, expansion_factor: int, monte_carlo: bool = False) -> list[Prompt]:
+        """
+        :param prompt_candidate: initial prompt to expand upon.
+        :param expansion_factor: number of expansions to perform.
+        :param monte_carlo: whether 50% of expansions are semantically identical, but worded differently.
+        :return: list of expanded prompts.
+        """
+        print("expansion started")
+        print(f"prompt id: {prompt_candidate.id}")
+        print(f"prompt val: {prompt_candidate.val}")
+        print(f"prompt score: {prompt_candidate.score}")
+
+        expansions: list[Prompt] = []
+
+        if self.image_gen:
+            error_correction = PromptTemplate(template=self.optimization_prompts["image_prompt_error_correction"],
+                                              input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
+        else:
+            error_correction = PromptTemplate(template=self.optimization_prompts["error_correction"],
+                                              input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
+
+        expansion_chain = LLMChain(llm=self.llm.langchain_model,
+                                   prompt=error_correction,
+                                   verbose=True)
+
+        # Define a function to execute the API call
+        def execute_call(_):
+            if self.synthetic_examples:
+                return expansion_chain.run(prompt=prompt_candidate.val,
+                                           toa=prompt_candidate.toa,
+                                           llm_name=self.llm.llm_name,
+                                           semantic_error=prompt_candidate.optimization_vector,
+                                           synthetic_examples=f"As part of output, generate synthetic examples to guide {self.llm.llm_name}")
+            else:
+                return expansion_chain.run(prompt=prompt_candidate.val,
+                                           toa=prompt_candidate.toa,
+                                           llm_name=self.llm.llm_name,
+                                           semantic_error=prompt_candidate.optimization_vector,
+                                           synthetic_examples="")
+
+        # Use ThreadPoolExecutor to execute calls in parallel
+        with ThreadPoolExecutor(max_workers=expansion_factor) as executor:
+            # Submit all the tasks and collect the futures
+            futures = [executor.submit(execute_call, _) for _ in range(expansion_factor)]
+
+            for i, future in enumerate(as_completed(futures)):
+                new_prompt_string = future.result()
+                new_prompt = Prompt(gen=prompt_generation,
+                                    id_in_gen=i,
+                                    val=new_prompt_string,
+                                    toa=prompt_candidate.toa)
+                self._critique_prompt(new_prompt)
+                self._score_prompt(new_prompt, self.test_data)
+                expansions.append(new_prompt)
+
+        print(f"prompt expansion count: {len(expansions)}")
+        print(f"prompt expansion ids: {[expansion.id for expansion in expansions]}")
+        print(f"prompt expansion scores: {[expansion.score for expansion in expansions]}")
+
+        return expansions
+
+
     # TODO: CRITICAL -> PASS CRITIQUE HISTORY OPTIONALLY
     # This would be akin to passing the gradient history to the LLM,
     # which would allow it to learn from the gradient history.
@@ -193,8 +265,12 @@ class Promptimizer:
         :return: semantic error of the prompt against the target action, optionally tested against provided data.
         """
         # generate semantic error
-        semantic_error_generation = PromptTemplate(template=self.optimization_prompts["semantic_error_generation"],
-                                                   input_variables=["prompt", "toa"])
+        if self.image_gen:
+            semantic_error_generation = PromptTemplate(template=self.optimization_prompts["image_error_generation"],
+                                                       input_variables=["prompt", "toa"])
+        else:
+            semantic_error_generation = PromptTemplate(template=self.optimization_prompts["semantic_error_generation"],
+                                                       input_variables=["prompt", "toa"])
 
         error_generator_chain = LLMChain(llm=self.llm.langchain_model,
                                          prompt=semantic_error_generation,
@@ -272,13 +348,20 @@ class TaskType(Enum):
 
 
 class ImageTaskType(Enum):
-    GEN_AI_ART_DALL_E = 'generative visual generation prompt for dall-e model'
-    GEN_AI_ART_MIDJOURNEY = 'generative visual generation prompt for midjourney model'
-    GEN_AI_ART_SD = 'generative visual generation prompt for stability ai models'
+    # TODO: Implement Selector
+    # GEN_AI_ART_DALL_E = 'generative visual generation prompt for dall-e model'
+    # GEN_AI_ART_MIDJOURNEY = 'generative visual generation prompt for midjourney model'
+    # GEN_AI_ART_SD = 'generative visual generation prompt for stability ai models'
     GEN_AI_ART_OTHER = 'generative visual generation prompt'
 
     @classmethod
     def enum_to_comma_separated_string(cls):
         # Use a list comprehension to extract the values (using .value) of each enum member
         # Then, join these values into a comma-separated string, converting them to strings if necessary
-        return ', '.join(str(member.value) for member in TaskType)
+        return ', '.join(str(member.value) for member in ImageTaskType)
+
+
+# TODO: allow passthrough of critique history, see what that does
+# output the history,
+# BUG: if anything is changed on the page, the optimized prompt will not show up, fix
+# output a graph showing improvement over time\generation

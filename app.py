@@ -1,3 +1,6 @@
+import asyncio
+import threading
+
 import streamlit as st
 import time
 
@@ -22,14 +25,15 @@ def webpage():
     st.sidebar.title("Promptimizer Configuration")
     count_of_generations = st.sidebar.slider('Number of steps:', 2, 7, 3)
     count_of_versions = st.sidebar.slider('Number of expansions per step:', 2, 10, 4)
+    count_of_winners = st.sidebar.slider('Number of winners in each step:', 1, 5, 2)
 
-    main_tab, key_config = st.tabs(["Home", "Settings"])
+    main_tab, key_config = st.tabs(["Home", "API Keys"])
     with st.container(border=True):
         topic = main_tab.text_area('Enter your prompt', st.session_state.history["content"])
         image_prompt_optimization = main_tab.toggle("Image Generation Prompt")
         compress_final_prompt = main_tab.toggle("Shorten Output Prompt")
         generate_synthetic_examples = main_tab.toggle("Generate Synthetic Examples")
-        submit_to_promptimizer = main_tab.button('Submit Optimization')
+        submit_to_promptimizer = main_tab.button('Optimize!')
 
     with st.container(border=True):
         key_config_chat_gpt = key_config.text_input('ChatGPT API Key', '')
@@ -39,7 +43,6 @@ def webpage():
     progress = 0
 
     if submit_to_promptimizer:
-        st.spinner("Optimizing (takes up to 3 minutes)")
         # create an object for validation purposes
         form_dict = {
             "llm_config": {
@@ -79,24 +82,31 @@ def webpage():
             promptimizer = Promptimizer(llm=llm,
                                         seed_prompt=input_prompt,
                                         # TODO: implement frontend for these
-                                        winner_count=1,
+                                        winner_count=count_of_winners,
                                         example_data=None,
                                         compress=compress_final_prompt,
                                         image_gen=image_prompt_optimization,
                                         synthetic_examples=generate_synthetic_examples)
             try:
-                response = promptimizer.promptimize(expansion_factor=count_of_versions,
-                                                    steps_factor=count_of_generations)
+                with st.spinner("Optimizing prompt..."):
+                    response = promptimizer.promptimize(expansion_factor=count_of_versions,
+                                                        steps_factor=count_of_generations)
             except Exception as e:
                 st.error(f"Uh oh! {e}")
                 return
-
-            st.write(response)
             st.success("Optimization complete!")
+
+            left, right = st.columns(2, gap='large')
+            left.write(f"Original Prompt Score: {response['original_prompt_score']}")
+            left.write(f"Original Prompt:\n {response['original_prompt']}")
+            right.write(f"Optimized Prompt Score: {response['optimized_prompt_score']}")
+            right.write(f"Optimized Prompt:\n {response['optimized_prompt']}")
+
             # logging
             end_time = time.time()
             elapsed_time = end_time - start_time
-            st.write(f"Request took: {elapsed_time:.2f} seconds")
+            st.sidebar.write(f"Request took: {elapsed_time:.2f} seconds")
+
         else:
             st.error(f"{form_errors}")
 

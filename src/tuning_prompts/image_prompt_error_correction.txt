@@ -1,0 +1,19 @@
+{synthetic_examples}, {llm_name}
+
+I'm trying to write a prompt to generate an image for {toa}.
+
+My current prompt is:
+"{prompt}"
+
+ the problems with this prompt is that
+ {semantic_error}
+
+ Based on the above information, you need to write a different improved prompt.
+
+ requirements:
+  -never provide resolution recommendations
+  -never recommend specific artists
+  -never recommend people
+  -never recommend works of art
+
+ The new prompt is:
