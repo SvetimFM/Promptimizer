@@ -4,6 +4,7 @@
 
 
 ### Features:
+    Synthetic Example generation: optimization will create synthetic examples against which the seed prompt is modified
 
     Optional Monte Carlo Expansion: Generates a diverse set of prompt expansions, including semantically identical but differently worded variations, to explore a broader space of potential improvements.
 
