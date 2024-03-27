@@ -1,0 +1,8 @@
+Sphinx Notation
+"""
+    :param <name>: Describes a parameter by name.
+    :type <name>: Specifies the type of the parameter.
+    :returns: Provides a brief description of what the method returns.
+    :rtype: Specifies the return type of the method.
+    :raises <exception>: Describes any exceptions that the method can raise.
+"""
