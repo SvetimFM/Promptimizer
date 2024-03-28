@@ -136,8 +136,8 @@ def validate_form(form_dict: dict[dict]) -> list[dict]:
 
 # creating a cookie to store user form history between reloads
 def init_page():
-    st.set_page_config(layout="wide")
-    st.set_page_config(page_title="Promptimizer")
+    st.set_page_config(layout="wide",
+                       page_title="Promptimizer")
     if 'outputs' not in st.session_state:
         st.session_state['outputs'] = []
 
