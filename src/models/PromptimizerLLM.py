@@ -1,6 +1,6 @@
+from __future__ import annotations # this is important to have at the top
 import logging
 from typing import Optional
-from __future__ import annotations # this is important to have at the top
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import OpenAI
