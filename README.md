@@ -17,26 +17,34 @@
 
 ### Usage
 
-To use Promptimizer, users should define their initial prompt, target action, and, optionally, a set of example data to guide the optimization process. The framework then iterates through expansion, critique, correction, and selection phases to refine the initial prompt into an optimized version.
+To use Promptimizer, users should define their initial prompt, target action, and, optionally (to be implemented), a set of example data to guide the optimization process. The framework then iterates through expansion, critique, correction, and selection phases to refine the initial prompt into an optimized version.
 
 
 ### Example usage
  
 ````
-optimized_prompts = run_optimizer( 
-llm,
-seed_prompt="Your initial prompt here",
-target_of_action="Your target action or error function to minimize",
-expansion_factor=10,
-winner_count=1,
-example_data={"Your example data": "Here"}
-)
+promptimizer = Promptimizer(llm=llm,
+                            seed_prompt=input_prompt,
+                            winner_count=count_of_winners,
+                            example_data=None,
+                            compress=compress_final_prompt,
+                            image_gen=image_prompt_optimization,
+                            synthetic_examples=generate_synthetic_examples)
+                            
+response = promptimizer.promptimize(expansion_factor=count_of_versions,
+                                    steps_factor=count_of_generations)
 ````
 
 
 ### Installation
 
-Promptimizer is designed to be integrated with existing LLM frameworks and APIs. Details on installation and dependencies will be provided in subsequent releases.
+Promptimizer is designed to be integrated with existing LLM frameworks and APIs. 
+
+```
+git clone https://github.com/SvetimFM/Promptimizer
+
+
+```
 
 
 ### Contributing

@@ -84,7 +84,6 @@ def webpage():
 
             promptimizer = Promptimizer(llm=llm,
                                         seed_prompt=input_prompt,
-                                        # TODO: implement frontend for these
                                         winner_count=count_of_winners,
                                         example_data=None,
                                         compress=compress_final_prompt,
