@@ -15,10 +15,9 @@ response_list: list[dict] = []
 def webpage():
     init_page()
 
-    st.markdown("<h1 style='text-align: right; color: white;'>P R O M P T I M I Z E R</h1>", unsafe_allow_html=True)
-    st.markdown("<h2 style='text-align: right; color: white;'>Best Prompt. One Click </h2>", unsafe_allow_html=True)
-    # st.title("P R O M P T I M I Z E R")
-    # st.subheader("Best Prompt. One Click.")
+    title_left, title_center, title_right = st.columns(3)
+    title_left.markdown("<h1 style='text-align: left; color: white;, padding-top: 0px;,'>P R O M P T I M I Z E R</h1>", unsafe_allow_html=True)
+    title_right.markdown("<h2 style='text-align: right; color: white;'>Best Prompt. One Click </h2>", unsafe_allow_html=True)
 
     st.sidebar.title("Model Configuration")
     llm_selection = st.sidebar.radio('Select LLM: (Gemini available for free)', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME], index=2)
@@ -39,13 +38,15 @@ def webpage():
 
     main_tab, key_config = st.tabs(["Home", "API Keys"])
     with st.container(border=True):
-        topic = main_tab.text_area('Enter your prompt', st.session_state.history["content"])
+        main_tab.markdown("")
+        topic = main_tab.text_area('Enter your prompt', st.session_state.history["content"], height=250)
         image_prompt_optimization = main_tab.toggle("Image Generation Prompt")
         compress_final_prompt = main_tab.toggle("Shorten Output Prompt")
         generate_synthetic_examples = main_tab.toggle("Generate Synthetic Examples")
         submit_to_promptimizer = main_tab.button('Optimize!')
 
     with st.container(border=True):
+        key_config.markdown("")
         key_config_chat_gpt = key_config.text_input('ChatGPT API Key', '')
         key_config_anthropic = key_config.text_input('Anthropic API Key', '')
         key_config_gemini = key_config.text_input('Gemini API Key', '')
@@ -116,13 +117,22 @@ def webpage():
         else:
             st.error(f"{form_errors}")
 
+    st.markdown("---")
     for output in st.session_state.get('outputs', []):
-        cont = st.container(height=600, border=True)
-        left, right = cont.columns(2, gap='large')
-        left.write(f"Original Prompt Score: {output['original_prompt_score']}")
-        left.write(f"Original Prompt: \n\n {output['original_prompt']}")
-        right.write(f"Optimized Prompt Score: {output['optimized_prompt_score']}")
-        right.write(f"\n {output['optimized_prompt']}")
+        cont = st.container(border=False)
+
+        left, right = cont.columns(2, gap='small')
+
+        left.markdown("**Original Prompt:**")
+        left.info(f"Original Prompt Score: **{output['original_prompt_score']}**")
+        right.markdown("**Optimized Prompt:**")
+        right.info(f"Optimized Prompt Score: **{output['optimized_prompt_score']}**")
+
+        left_container = left.container(height=400, border=True)
+        right_container = right.container(height=400, border=True)
+
+        left_container.write(f"{output['original_prompt']}")
+        right_container.write(f"{output['optimized_prompt']}")
 
 
 # returns a list of errors in the form
