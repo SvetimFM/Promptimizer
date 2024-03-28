@@ -15,8 +15,10 @@ response_list: list[dict] = []
 def webpage():
     init_page()
 
-    st.title("P R O M P T I M I Z E R")
-    st.subheader("Best Prompt. One Click.")
+    st.markdown("<h1 style='text-align: right; color: white;'>P R O M P T I M I Z E R</h1>", unsafe_allow_html=True)
+    st.markdown("<h2 style='text-align: right; color: white;'>Best Prompt. One Click </h2>", unsafe_allow_html=True)
+    # st.title("P R O M P T I M I Z E R")
+    # st.subheader("Best Prompt. One Click.")
 
     st.sidebar.title("Model Configuration")
     llm_selection = st.sidebar.radio('Select LLM: (Gemini available for free)', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME], index=2)
@@ -134,6 +136,7 @@ def validate_form(form_dict: dict[dict]) -> list[dict]:
 
 # creating a cookie to store user form history between reloads
 def init_page():
+    st.set_page_config(layout="wide")
     st.set_page_config(page_title="Promptimizer")
     if 'outputs' not in st.session_state:
         st.session_state['outputs'] = []
