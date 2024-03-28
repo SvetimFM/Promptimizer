@@ -1,6 +1,8 @@
 Given: {prompt}, Prompt's target of action (ToA): {toa}
 
-- note potential ways to improve prompts general capacity to perform the request in prompt
+- note potential ways to improve prompts capacity to perform the request in prompt through the lens of its core goal
 - only generate criticisms and critiques, without fixing the prompt or regenerating it
 
 Please do a good job, you must - my job depends on it
+
+Issues with this prompt are:
