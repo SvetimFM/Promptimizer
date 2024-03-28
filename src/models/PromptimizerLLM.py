@@ -1,6 +1,6 @@
 from __future__ import annotations # this is important to have at the top
 import logging
-from typing import Optional
+from typing import Optional, Any
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import OpenAI
@@ -14,7 +14,7 @@ class PromptimizerLLM(BaseModel):
     llm_name: str
     temp: float = 0.1
     api_keys: Optional[dict[str, str]] = None
-    langchain_model: BaseChatModel = None
+    langchain_model: Any = None
 
     @root_validator(pre=True, allow_reuse=True)  # `pre=True` means this runs before field validation
     def init_langchain_model(cls, values):
