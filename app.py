@@ -109,7 +109,7 @@ def webpage():
             st.error(f"{form_errors}")
 
     for output in st.session_state.get('outputs', []):
-        cont = st.container(border=True)
+        cont = st.container(height=600, border=True)
         left, right = cont.columns(2, gap='large')
         left.write(f"Original Prompt Score: {output['original_prompt_score']}")
         left.write(f"Original Prompt: \n\n {output['original_prompt']}")
