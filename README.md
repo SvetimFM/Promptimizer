@@ -42,8 +42,8 @@ Promptimizer is designed to be integrated with existing LLM frameworks and APIs.
 
 ```
 git clone https://github.com/SvetimFM/Promptimizer
-
-
+cd path/to/cloned/github/repository
+sudo python setup.py install
 ```
 
 
@@ -54,7 +54,7 @@ Contributions to Promptimizer are welcome! Whether it's through submitting bug r
 
 ### License
 
-Promptimizer is open source and available under LICENSE.
+Promptimizer is open source and available under Apache 2.0.
 
 
 ### Acknowledgements
