@@ -17,7 +17,7 @@ def webpage():
     init_page()
 
     title_left, title_center, title_right = st.columns(3)
-    title_left.markdown("<h1 style='text-align: left; color: white;, padding-top: 0px;,'>P R O M P T I M I Z E R</h1>",
+    title_left.markdown("<h1 style='text-align: left; color: white; padding-top: 10px;'>P R O M P T I M I Z E R</h1>",
                         unsafe_allow_html=True)
     title_right.markdown("""
     <div style='display: flex; justify-content: flex-end; align-items: center; height: 100%;'>
