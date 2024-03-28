@@ -1,3 +1,4 @@
+import logging
 from typing import Any, Optional
 
 from langchain_anthropic import ChatAnthropic
@@ -28,31 +29,38 @@ class PromptimizerLLM(BaseModel):
                 values['langchain_model'] = OpenAI(model_name=GPT4,
                                                    temperature=temp,
                                                    openai_api_key=api_keys["chat_gpt"])
-            else:
+            elif OPEN_AI_API_KEY:
                 values['langchain_model'] = OpenAI(model_name=GPT4,
                                                    temperature=temp,
                                                    openai_api_key=OPEN_AI_API_KEY)
+            else:
+                logging.warning("OpenAI API key is missing or invalid.")
+
         elif llm_name == CLAUDE_NAME:
             if "anthropic" in api_keys.keys() and api_keys["anthropic"]:
                 values['langchain_model'] = ChatAnthropic(
                                                     model_name=OPUS,
                                                     temperature=temp,
                                                     anthropic_api_key=api_keys["anthropic"])
-            else:
+            elif ANTHROPIC_API_KEY:
                 values['langchain_model'] = ChatAnthropic(
                                                     model_name=OPUS,
                                                     temperature=temp,
                                                     anthropic_api_key=ANTHROPIC_API_KEY)
+            else:
+                logging.warning("Anthropic API key is missing or invalid.")
+
         elif llm_name == GEMINI_NAME:
             if "gemini" in api_keys.keys() and api_keys["gemini"]:
                 values['langchain_model'] = ChatGoogleGenerativeAI(
                                                     model=GEMINI,
                                                     google_api_key=api_keys["gemini"])
-            else:
+            elif GOOGLE_API_KEY:
                 values['langchain_model'] = ChatGoogleGenerativeAI(
                                                     model=GEMINI,
                                                     google_api_key=GOOGLE_API_KEY)
+            else:
+                logging.warning("Google API key is missing or invalid.")
         else:
             raise ValueError("Invalid LLM name")
-
         return values
