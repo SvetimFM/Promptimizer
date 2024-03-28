@@ -11,13 +11,20 @@ from src.promptimizer.promptimizer import Promptimizer
 
 response_list: list[dict] = []
 
+
 # TODO: IMPLEMENT TOA
 def webpage():
     init_page()
 
     title_left, title_center, title_right = st.columns(3)
-    title_left.markdown("<h1 style='text-align: left; color: white;, padding-top: 0px;,'>P R O M P T I M I Z E R</h1>", unsafe_allow_html=True)
-    title_right.markdown("<h2 style='text-align: right; color: white;'>Best Prompt. One Click </h2>", unsafe_allow_html=True)
+    title_left.markdown("<h1 style='text-align: left; color: white;, padding-top: 0px;,'>P R O M P T I M I Z E R</h1>",
+                        unsafe_allow_html=True)
+    title_right.markdown("""
+    <div style='display: flex; justify-content: flex-end; align-items: center; height: 100%;'>
+        <h2 text-align: right; style='color: white;'>Best Prompt. One Click</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
 
     st.sidebar.title("Model Configuration")
     llm_selection = st.sidebar.radio('Select LLM: (Gemini available for free)', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME], index=2)
@@ -40,10 +47,17 @@ def webpage():
     with st.container(border=True):
         main_tab.markdown("")
         topic = main_tab.text_area('Enter your prompt', st.session_state.history["content"], height=250)
+
+        main_tab.markdown("---")
+
         image_prompt_optimization = main_tab.toggle("Image Generation Prompt")
         compress_final_prompt = main_tab.toggle("Shorten Output Prompt")
         generate_synthetic_examples = main_tab.toggle("Generate Synthetic Examples")
-        submit_to_promptimizer = main_tab.button('Optimize!')
+
+        main_tab.markdown("---")
+
+        submit_to_promptimizer = main_tab.button('Optimize!', use_container_width=True)
+        main_tab.markdown("")
 
     with st.container(border=True):
         key_config.markdown("")
@@ -117,7 +131,6 @@ def webpage():
         else:
             st.error(f"{form_errors}")
 
-    st.markdown("---")
     for output in st.session_state.get('outputs', []):
         cont = st.container(border=False)
 
