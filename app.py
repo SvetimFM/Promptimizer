@@ -22,13 +22,20 @@ def webpage():
 
     st.sidebar.title("Model Configuration")
     llm_selection = st.sidebar.radio('Select LLM: (Gemini available for free)', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME], index=2)
-    temp_selection = st.sidebar.slider('Temperature:', 0.0, 1.0,
-                                       0.1)  # remove this for release - find best temp (likely either 0.0 or 0.6, might be 0.1)
+    temp_selection = st.sidebar.slider('Temperature:', 0.0, 1.0, 0.1)  # remove this for release - find best temp (likely either 0.0 or 0.6, might be 0.1)
+    st.sidebar.info("Set above 0.6 for image prompts")
 
     st.sidebar.title("Promptimizer Configuration")
     count_of_generations = st.sidebar.slider('Number of steps:', 2, 7, 3)
     count_of_versions = st.sidebar.slider('Number of expansions per step:', 2, 10, 4)
-    count_of_winners = st.sidebar.slider('Number of winners in each step:', 1, 5, 2)
+    count_of_winners = st.sidebar.slider('Number of winners selected in each step:', 1, 5, 2)
+    st.sidebar.markdown("---")
+
+    st.sidebar.title("Description")
+    st.sidebar.markdown("- **Number of steps** - count of evolutions over which the prompt will be improved")
+    st.sidebar.markdown("- **Number of expansions** - how many candidate prompts are generated in each step")
+    st.sidebar.markdown("- **Number of winners** - number of prompts that get expanded in the following step")
+    st.sidebar.info("For more information, see [README](https://github.com/SvetimFM/Promptimizer/blob/main/README.md)")
 
     main_tab, key_config = st.tabs(["Home", "API Keys"])
     with st.container(border=True):
