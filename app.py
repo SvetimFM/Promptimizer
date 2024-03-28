@@ -9,6 +9,7 @@ from src.models.Prompt import Prompt
 from src.promptimizer.constants import GPT4_NAME, CLAUDE_NAME, GEMINI_NAME
 from src.promptimizer.promptimizer import Promptimizer
 
+response_list: list[dict] = []
 
 # TODO: IMPLEMENT TOA
 def webpage():
@@ -91,16 +92,13 @@ def webpage():
                 with st.spinner("Optimizing prompt..."):
                     response = promptimizer.promptimize(expansion_factor=count_of_versions,
                                                         steps_factor=count_of_generations)
+
+                    st.session_state['outputs'].append(response)
+
             except Exception as e:
                 st.error(f"Uh oh! {e}")
                 return
             st.success("Optimization complete!")
-
-            left, right = st.columns(2, gap='large')
-            left.write(f"Original Prompt Score: {response['original_prompt_score']}")
-            left.write(f"Original Prompt:\n {response['original_prompt']}")
-            right.write(f"Optimized Prompt Score: {response['optimized_prompt_score']}")
-            right.write(f"Optimized Prompt:\n {response['optimized_prompt']}")
 
             # logging
             end_time = time.time()
@@ -109,6 +107,14 @@ def webpage():
 
         else:
             st.error(f"{form_errors}")
+
+    for output in st.session_state.get('outputs', []):
+        cont = st.container(border=True)
+        left, right = cont.columns(2, gap='large')
+        left.write(f"Original Prompt Score: {output['original_prompt_score']}")
+        left.write(f"Original Prompt: \n\n {output['original_prompt']}")
+        right.write(f"Optimized Prompt Score: {output['optimized_prompt_score']}")
+        right.write(f"\n {output['optimized_prompt']}")
 
 
 # returns a list of errors in the form
@@ -129,6 +135,9 @@ def validate_form(form_dict: dict[dict]) -> list[dict]:
 # creating a cookie to store user form history between reloads
 def init_page():
     st.set_page_config(page_title="Promptimizer")
+    if 'outputs' not in st.session_state:
+        st.session_state['outputs'] = []
+
     if 'history' not in st.session_state:
         st.session_state['history'] = {"role": "user",
                                        "content": "Prompt Goes Here"
