@@ -1,8 +1,7 @@
 import logging
 from typing import Optional
-
+from __future__ import annotations # this is important to have at the top
 from langchain_anthropic import ChatAnthropic
-from langchain_core.language_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import OpenAI
 from pydantic import BaseModel, root_validator
@@ -62,3 +61,10 @@ class PromptimizerLLM(BaseModel):
         else:
             raise ValueError("Invalid LLM name")
         return values
+
+
+#Ive no idea, but fixed pydantic validation errors *shrug*
+#https://stackoverflow.com/questions/63420889/fastapi-pydantic-circular-references-in-separate-files/70384637#70384637
+from langchain_core.language_models import BaseChatModel
+
+PromptimizerLLM.update_forward_refs()
