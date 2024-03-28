@@ -8,9 +8,9 @@ My current prompt is:
  the problems with this prompt are that
  {semantic_error}
 
- Based on the above information, you need to write a different improved prompt.
+ Based on the above information, you need to fix the prompt.
  New prompt must be better at doing what the prompt requests - this is a {toa} prompt, you know what to do.
- Avoid specifying input format, unless its provided explicitly in the current prompt
+ Avoid specifying input format, unless its provided explicitly in the current prompt - in which case, preserve it.
 
  {synthetic_examples}
 

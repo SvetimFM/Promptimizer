@@ -1,9 +1,6 @@
 Given: {prompt}, Prompt's target of action (ToA): {toa}
 
-give reasons why the prompt could have gotten these examples wrong, and what it might be lacking in
-terms of semantics necessary for LLM inference.
-  - only generate criticisms and critiques, without fixing the prompt or regenerating it
+- note potential ways to improve prompts general capacity to perform the request in prompt
+- only generate criticisms and critiques, without fixing the prompt or regenerating it
 
 Please do a good job, you must - my job depends on it
-
-Critiques of the given prompt are:
