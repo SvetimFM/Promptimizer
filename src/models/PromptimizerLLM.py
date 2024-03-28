@@ -1,23 +1,21 @@
 import logging
-from typing import Any, Optional
+from typing import Optional
 
 from langchain_anthropic import ChatAnthropic
+from langchain_core.language_models import BaseChatModel
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import OpenAI
 from pydantic import BaseModel, root_validator
-from rich import console
 
 from src.promptimizer.apikey import OPEN_AI_API_KEY, ANTHROPIC_API_KEY, GOOGLE_API_KEY
 from src.promptimizer.constants import OPUS, GPT4_NAME, CLAUDE_NAME, GEMINI_NAME, GPT4, GEMINI
-
-import streamlit as st
 
 
 class PromptimizerLLM(BaseModel):
     llm_name: str
     temp: float = 0.1
     api_keys: Optional[dict[str, str]] = None
-    langchain_model: Any = None
+    langchain_model: BaseChatModel = None
 
     @root_validator(pre=True, allow_reuse=True)  # `pre=True` means this runs before field validation
     def init_langchain_model(cls, values):
