@@ -1,4 +1,4 @@
-Given: {prompt}, Prompt's target of action (ToA): {toa}
+Given: {prompt}, Prompt's target of action (ToA): {toa}, and original prompt {seed_prompt}
 
 - note potential ways to improve prompts capacity to perform the request in prompt through the lens of its core goal
 - only generate criticisms and critiques, without fixing the prompt or regenerating it

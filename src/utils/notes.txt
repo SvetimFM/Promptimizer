@@ -6,3 +6,4 @@ Sphinx Notation
     :rtype: Specifies the return type of the method.
     :raises <exception>: Describes any exceptions that the method can raise.
 """
+

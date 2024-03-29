@@ -65,8 +65,6 @@ def webpage():
         key_config_anthropic = key_config.text_input('Anthropic API Key', '')
         key_config_gemini = key_config.text_input('Gemini API Key', '')
 
-    progress = 0
-
     if submit_to_promptimizer:
         # create an object for validation purposes
         form_dict = {
@@ -101,7 +99,6 @@ def webpage():
 
             llm = PromptimizerLLM(**llm_config)
 
-            # TODO: add manual custom target_of_action
             input_prompt = Prompt(**prompt_config)
 
             promptimizer = Promptimizer(llm=llm,
@@ -112,15 +109,15 @@ def webpage():
                                         image_gen=image_prompt_optimization,
                                         synthetic_examples=generate_synthetic_examples)
             try:
-                with st.spinner("Optimizing prompt..."):
+                with st.spinner("Optimizing prompt... (takes ~2 minutes)"):
                     response = promptimizer.promptimize(expansion_factor=count_of_versions,
                                                         steps_factor=count_of_generations)
-
                     st.session_state['outputs'].append(response)
 
             except Exception as e:
                 st.error(f"Uh oh! {e}")
                 return
+
             st.success("Optimization complete!")
 
             # logging
@@ -142,9 +139,9 @@ def webpage():
         right.info(f"Optimized Prompt Score: **{output['optimized_prompt_score']}**")
 
         left_container = left.container(height=400, border=True)
-        right_container = right.container(height=400, border=True)
-
         left_container.write(f"{output['original_prompt']}")
+
+        right_container = right.container(height=400, border=True)
         right_container.write(f"{output['optimized_prompt']}")
 
 

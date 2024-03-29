@@ -157,7 +157,7 @@ class Promptimizer:
                                               input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
         else:
             error_correction = PromptTemplate(template=self.optimization_prompts["error_correction"],
-                                          input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
+                                          input_variables=["seed_prompt", "prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
 
         expansion_chain = LLMChain(llm=self.llm.langchain_model,
                                    prompt=error_correction,
@@ -165,14 +165,16 @@ class Promptimizer:
 
         for _ in range(expansion_factor):
             if self.synthetic_examples:
-                new_prompt_string = expansion_chain.run(prompt=prompt_candidate.val,
+                new_prompt_string = expansion_chain.run(seed_prompt=self.seed_prompt,
+                                                        prompt=prompt_candidate.val,
                                                         toa=prompt_candidate.toa,
                                                         llm_name=self.llm.llm_name,
                                                         semantic_error=prompt_candidate.optimization_vector,
                                                         synthetic_examples=f"As part of output, generate synthetic examples to guide {self.llm.llm_name}")
 
             else:
-                new_prompt_string = expansion_chain.run(prompt=prompt_candidate.val,
+                new_prompt_string = expansion_chain.run(seed_prompt=self.seed_prompt,
+                                                        prompt=prompt_candidate.val,
                                                         toa=prompt_candidate.toa,
                                                         llm_name=self.llm.llm_name,
                                                         semantic_error=prompt_candidate.optimization_vector,
