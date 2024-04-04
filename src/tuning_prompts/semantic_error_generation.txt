@@ -1,10 +1,16 @@
-Given: prompt {prompt}, Prompt's target of action (ToA): {toa}, and original prompt {seed_prompt}
+Given: prompt
+
+ {prompt},
+
+ Prompt's targets of action (ToA):
+
+ {toa},
+
+ and original prompt:
+
+ {seed_prompt}
 
 - note potential ways to improve prompt's capacity to perform the request in prompt through the lens of its core goal in original prompt
 - only generate criticisms and critiques, without fixing the prompt or regenerating it
-
-Please do a good job, you must - my job depends on it
-
-wrap the output with <START> and <END>
 
 Issues with this prompt are:

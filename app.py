@@ -193,11 +193,6 @@ def init_page():
                                        "content": "Prompt Goes Here"
                                        }
 
-def provide_toa():
-
-
-
-    return selected_items
 
 def main():
     webpage()

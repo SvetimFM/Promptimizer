@@ -74,6 +74,8 @@ class Promptimizer:
             toa = toa_prefix + ", ".join(list_of_toas)
             self.custom_toa = toa
             print(f"custom toa: {toa}")
+        else:
+            self.custom_toa = None
 
         self._select_toa(self.seed_prompt, self.llm.llm_name)
 
@@ -167,7 +169,7 @@ class Promptimizer:
                                               input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
         else:
             error_correction = PromptTemplate(template=self.optimization_prompts["error_correction"],
-                                          input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
+                                          input_variables=["prompt", "llm_name", "semantic_error", "synthetic_examples"])
 
         expansion_chain = LLMChain(llm=self.llm.langchain_model,
                                    prompt=error_correction,
@@ -183,7 +185,6 @@ class Promptimizer:
 
             else:
                 new_prompt_string = expansion_chain.run(prompt=prompt_candidate.val,
-                                                        toa=prompt_candidate.toa,
                                                         llm_name=self.llm.llm_name,
                                                         semantic_error=prompt_candidate.optimization_vector,
                                                         synthetic_examples="")
