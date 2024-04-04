@@ -13,6 +13,7 @@ class Promptimizer:
                  llm: PromptimizerLLM,
                  seed_prompt: Prompt,
                  winner_count: int = 2,
+                 custom_toa: [list] = None,
                  compress: bool = False,
                  image_gen: bool = False,
                  synthetic_examples: bool = False,
@@ -65,6 +66,15 @@ class Promptimizer:
             self.optimization_prompts["image_prompt_error_correction"] = data
 
         # select target of action for a given seed prompt
+        if custom_toa:
+            list_of_toas = []
+            toa_prefix = "The prompt must perform well and be optimized based on the following targets of action: "
+            for toa in custom_toa:
+                list_of_toas.append(toa)
+            toa = toa_prefix + ", ".join(list_of_toas)
+            self.custom_toa = toa
+            print(f"custom toa: {toa}")
+
         self._select_toa(self.seed_prompt, self.llm.llm_name)
 
     # exposed method to train the prompt
@@ -157,7 +167,7 @@ class Promptimizer:
                                               input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
         else:
             error_correction = PromptTemplate(template=self.optimization_prompts["error_correction"],
-                                          input_variables=["seed_prompt", "prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
+                                          input_variables=["prompt", "toa", "llm_name", "semantic_error", "synthetic_examples"])
 
         expansion_chain = LLMChain(llm=self.llm.langchain_model,
                                    prompt=error_correction,
@@ -165,16 +175,14 @@ class Promptimizer:
 
         for _ in range(expansion_factor):
             if self.synthetic_examples:
-                new_prompt_string = expansion_chain.run(seed_prompt=self.seed_prompt,
-                                                        prompt=prompt_candidate.val,
+                new_prompt_string = expansion_chain.run(prompt=prompt_candidate.val,
                                                         toa=prompt_candidate.toa,
                                                         llm_name=self.llm.llm_name,
                                                         semantic_error=prompt_candidate.optimization_vector,
                                                         synthetic_examples=f"As part of output, generate synthetic examples to guide {self.llm.llm_name}")
 
             else:
-                new_prompt_string = expansion_chain.run(seed_prompt=self.seed_prompt,
-                                                        prompt=prompt_candidate.val,
+                new_prompt_string = expansion_chain.run(prompt=prompt_candidate.val,
                                                         toa=prompt_candidate.toa,
                                                         llm_name=self.llm.llm_name,
                                                         semantic_error=prompt_candidate.optimization_vector,
@@ -255,7 +263,6 @@ class Promptimizer:
 
         return expansions
 
-
     # TODO: CRITICAL -> PASS CRITIQUE HISTORY OPTIONALLY
     # This would be akin to passing the gradient history to the LLM,
     # which would allow it to learn from the gradient history.
@@ -272,14 +279,18 @@ class Promptimizer:
                                                        input_variables=["prompt", "toa"])
         else:
             semantic_error_generation = PromptTemplate(template=self.optimization_prompts["semantic_error_generation"],
-                                                       input_variables=["prompt", "toa"])
+                                                       input_variables=["seed_prompt", "prompt", "toa"])
 
         error_generator_chain = LLMChain(llm=self.llm.langchain_model,
                                          prompt=semantic_error_generation,
                                          verbose=True)
 
-        prompt.optimization_vector = error_generator_chain.run(prompt=prompt.val,
-                                                               toa=prompt.toa)
+        if self.image_gen:
+            prompt.optimization_vector = error_generator_chain.run(prompt=prompt.val, toa=prompt.toa)
+        else:
+            prompt.optimization_vector = error_generator_chain.run(seed_prompt=self.seed_prompt,
+                                                                   prompt=prompt.val,
+                                                                   toa=prompt.toa)
 
         print(f"critique for {prompt.id}: {prompt.optimization_vector}")
 
@@ -312,35 +323,36 @@ class Promptimizer:
 
     # set the target of action for a given seed prompt
     def _select_toa(self, prompt: Prompt, llm_name: str):
-        toa_selection = PromptTemplate(template=self.optimization_prompts["toa_selection"],
-                                       input_variables=["prompt", "toa", "llm"])
+        if self.custom_toa is None:
+            toa_selection = PromptTemplate(template=self.optimization_prompts["toa_selection"],
+                                           input_variables=["prompt", "toa", "llm"])
 
-        toa_chain = LLMChain(llm=self.llm.langchain_model,
-                             prompt=toa_selection,
-                             verbose=True)
+            toa_chain = LLMChain(llm=self.llm.langchain_model,
+                                 prompt=toa_selection,
+                                 verbose=True)
 
-        prompt.toa = toa_chain.run(prompt=prompt.val,
-                                   toa=self.toa_list,
-                                   llm=llm_name)
-
+            prompt.toa = [toa_chain.run(prompt=prompt.val,
+                                        toa=self.toa_list,
+                                        llm=llm_name)]
+        else:
+            prompt.toa = self.custom_toa
         print(f"toa for seed prompt: {prompt.toa}")
 
 
 class TaskType(Enum):
-    NEEDLE_IN_HAYSTACK = 'needle in haystack'
-    CODE_GEN = 'code generation'
-    CODE_EVALUATION = 'code evaluation'
-    IMAGE_GEN = 'image generation'
-    IMAGE_EVAL = 'image evaluation'
-    CODE_GEN_TROUBLESHOOT = 'code troubleshooting'
-    TEXT_GEN_QA = 'generative question answering'
-    TEXT_GEN_SUMMARIZATION = 'text summarization'
-    TEXT_GEN_TRANSLATION = 'text translation'
-    TEXT_GEN_WRITING = 'text generation'
-    TEXT_GEN_CHAT = 'text_gen_chat'
-    CATEGORIZATION = 'categorization'
-    FACT_CHECKING = 'fact_checking'
-    SENTIMENT_ANALYSIS = 'sentiment_analysis'
+    NEEDLE_IN_HAYSTACK = 'Needle in a Haystack Search'
+    CODE_GEN = 'Code Generation'
+    CODE_EVALUATION = 'Code Evaluation'
+    CODE_GEN_TROUBLESHOOT = 'Code Troubleshooting'
+    TEXT_GEN_QA = 'Question Answering'
+    TEXT_GEN_SUMMARIZATION = 'Text Summarization'
+    TEXT_GEN_TRANSLATION = 'Text Translation'
+    TEXT_GEN_WRITING = 'Text Generation'
+    CATEGORIZATION = 'Categorization'
+    FACT_CHECKING = 'Fact Checking'
+    SENTIMENT_ANALYSIS = 'Sentiment Analysis'
+    ADVICE_PROVIDER = 'Subject Matter Expert'
+    MIXTURE_OF_EXPERTS = 'Socratic Dialogue'
 
     @classmethod
     def enum_to_comma_separated_string(cls):

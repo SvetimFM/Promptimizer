@@ -7,12 +7,13 @@ import time
 from src.models.PromptimizerLLM import PromptimizerLLM
 from src.models.Prompt import Prompt
 from src.promptimizer.constants import GPT4_NAME, CLAUDE_NAME, GEMINI_NAME
-from src.promptimizer.promptimizer import Promptimizer
+from src.promptimizer.promptimizer import Promptimizer, TaskType
 
 response_list: list[dict] = []
+# Create a list to store the selected items
+selected_items = []
 
 
-# TODO: IMPLEMENT TOA
 def webpage():
     init_page()
 
@@ -24,7 +25,6 @@ def webpage():
         <h2 text-align: right; style='color: white;'>Best Prompt. One Click</h2>
     </div>
     """, unsafe_allow_html=True)
-
 
     st.sidebar.title("Model Configuration")
     llm_selection = st.sidebar.radio('Select LLM: (Gemini available for free)', [GPT4_NAME, CLAUDE_NAME, GEMINI_NAME], index=2)
@@ -49,10 +49,18 @@ def webpage():
         topic = main_tab.text_area('Enter your prompt', st.session_state.history["content"], height=250)
 
         main_tab.markdown("---")
+        main_tab_left, main_tab_right = main_tab.columns(2)
+        image_prompt_optimization = main_tab_left.toggle("Image Generation Prompt")
+        compress_final_prompt = main_tab_left.toggle("Shorten Output Prompt")
+        generate_synthetic_examples = main_tab_left.toggle("Generate Synthetic Examples")
 
-        image_prompt_optimization = main_tab.toggle("Image Generation Prompt")
-        compress_final_prompt = main_tab.toggle("Shorten Output Prompt")
-        generate_synthetic_examples = main_tab.toggle("Generate Synthetic Examples")
+        options = main_tab_right.multiselect(
+            label="Select areas in which the prompt should be improved",
+            options=[item.value for item in TaskType],
+            key="values"
+        )
+        # Add the selected options to the list of selected items
+        selected_items.extend(options)
 
         main_tab.markdown("---")
 
@@ -107,7 +115,8 @@ def webpage():
                                         example_data=None,
                                         compress=compress_final_prompt,
                                         image_gen=image_prompt_optimization,
-                                        synthetic_examples=generate_synthetic_examples)
+                                        synthetic_examples=generate_synthetic_examples,
+                                        custom_toa=selected_items)
             try:
                 with st.spinner("Optimizing prompt... (takes ~2 minutes)"):
                     response = promptimizer.promptimize(expansion_factor=count_of_versions,
@@ -184,6 +193,11 @@ def init_page():
                                        "content": "Prompt Goes Here"
                                        }
 
+def provide_toa():
+
+
+
+    return selected_items
 
 def main():
     webpage()
